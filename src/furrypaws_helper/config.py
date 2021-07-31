@@ -1,7 +1,6 @@
 import configparser
 import logging
 import os
-import urllib.parse
 
 logger = logging.getLogger(__name__)
 
