@@ -9,19 +9,19 @@ from furrypaws_helper.config import FurryConfig
 logger = logging.getLogger(__name__)
 
 
-def eat_response(item):
-    print(item)
+def eat_response(code, body):
+    print(code, body)
     return (None, [])
 
 
-def kennel_response(item):
-    print(item)
+def kennel_response(code, body):
+    print(code, body)
     # parse the kennel page, return no response, but a list of dog pages to hit
     return (None, [])
 
 
-def dog_response(item):
-    print(item)
+def dog_response(code, body):
+    print(code, body)
     # parse the dog page, return the data item as a response, and no chain
     return (None, [])
 
