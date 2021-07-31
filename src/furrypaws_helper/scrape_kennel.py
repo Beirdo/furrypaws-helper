@@ -1,8 +1,10 @@
 import json
 import logging
 import os
+import re
 import sys
 
+from bs4 import BeautifulSoup
 from laracna.scraper import Scraper
 
 from furrypaws_helper import setup_logging
@@ -11,7 +13,7 @@ from furrypaws_helper.config import FurryConfig
 logger = logging.getLogger(__name__)
 scraper = None
 config = None
-
+dog_re = re.compile(r'^https://www.furry-paws.com/dog/index/\d+/?$')
 
 def login_response(code, body):
     logger.info("Got login response: code %d" % code)
@@ -25,7 +27,11 @@ def login_response(code, body):
 def kennel_response(code, body):
     logger.info("Got kennel response: code %d" % code)
     # parse the kennel page, return no response, but a list of dog pages to hit
-    return (None, [])
+    soup = BeautifulSoup(body, features="html.parser")
+    urls = {a['href'] for a in soup.select("tr a")}
+    urls = list(filter(dog_re.search, urls))
+    items = [{"url": url, "type": "dog"} for url in urls]
+    return (None, items)
 
 
 def dog_response(code, body):
