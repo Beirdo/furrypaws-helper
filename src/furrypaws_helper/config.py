@@ -13,6 +13,10 @@ class FurryConfig(object):
         config.read(filename)
         self.config = config
 
+    @staticmethod
+    def cookiefile():
+        return os.path.expanduser("~/.furrypaws.cookies")
+
     def get(self, key):
         return self.config.get("furrypaws", key)
 
@@ -30,7 +34,9 @@ class FurryConfig(object):
         return {
             "url": "https://www.furry-paws.com/",
             "method": "POST",
-            "body": urllib.parse.urlencode(data).encode("utf-8"),
-            "content_type": "application/x-www-form-urlencoded",
+            "data": data,
             "type_": "login",
+            "headers": {
+                "Referer": "https://www.furry-paws.com/",
+            },
         }

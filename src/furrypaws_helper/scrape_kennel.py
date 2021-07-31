@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import sys
 
 from laracna.scraper import Scraper
@@ -8,10 +9,16 @@ from furrypaws_helper import setup_logging
 from furrypaws_helper.config import FurryConfig
 
 logger = logging.getLogger(__name__)
+scraper = None
+config = None
 
 
 def login_response(code, body):
     logger.info("Got login response: code %d" % code)
+    cookiefile = FurryConfig.cookiefile()
+    global scraper
+    scraper.save_cookies(cookiefile)
+
     return (None, [])
 
 
@@ -35,15 +42,21 @@ callbacks = {
 
 
 def main():
-    setup_logging()
+    setup_logging(logging.DEBUG)
     config = FurryConfig()
+    global scraper
     scraper = Scraper(callbacks=callbacks)
     scraper.scrape()
 
-    # Login to the page, using credentials in ~/.furrypaws
-    logger.info("Logging into furrypaws")
-    login_form_data = config.get_login_form_data()
-    scraper.queue(**login_form_data)
+    cookiefile = config.cookiefile()
+    if os.path.exists(cookiefile):
+        scraper.load_cookies(cookiefile)
+    else:
+        # Login to the page, using credentials in ~/.furrypaws
+        logger.info("Logging into furrypaws")
+        login_form_data = config.get_login_form_data()
+        logger.info("login: %s" % login_form_data)
+        scraper.queue(**login_form_data)
 
     # And start scraping from the "overview" page to get all of the dogs listed
     logger.info("Queuing kennel overview")
