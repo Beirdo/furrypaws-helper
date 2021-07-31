@@ -15,11 +15,24 @@ logger = logging.getLogger(__name__)
 
 class KennelScraper(object):
     dog_re = re.compile(r'^https://www.furry-paws.com/dog/index/\d+/?$')
+    kennel_re = re.compile(r'https://www.furry-paws.com/kennel/view/\d+/\d+/?$')
+    dog_items = {
+        "Full Name:": "name",
+        "Callname:": "callname",
+        "Breed:": "breed",
+        "Gender:": "sex",
+        "Days Aged:": "age",
+        "Genotype:": "genotype",
+        "Generation:": "generation",
+        "Times Bred:": "bred",
+    }
+    dog_stats = ["level", "agility", "charisma", "intelligence", "speed",
+                 "stamina", "strength"]
 
     def __init__(self):
         self.callbacks = {
             "login": self.login_response,
-            "kennel-list": self.kennel_response,
+            "kennel": self.kennel_response,
             "dog": self.dog_response,
         }
         self.config = FurryConfig()
@@ -35,15 +48,43 @@ class KennelScraper(object):
         logger.info("Got kennel response: code %d" % code)
         # parse the kennel page, return no response, but a list of dog pages to hit
         soup = BeautifulSoup(body, features="html.parser")
-        urls = {a['href'] for a in soup.select("tr a")}
-        urls = list(filter(self.dog_re.search, urls))
-        items = [{"url": url, "type": "dog"} for url in urls]
+        urls = {a['href'] for a in soup.select("a")}
+        dog_urls = list(filter(self.dog_re.search, urls))
+        kennel_urls = list(filter(self.kennel_re.search, urls))
+        items = [{"url": url, "type": "dog"} for url in dog_urls]
+        items.extend([{"url": url, "type": "kennel"} for url in kennel_urls])
         return (None, items)
 
     def dog_response(self, code, body):
         logger.info("Got dog response: code %d" % code)
         # parse the dog page, return the data item as a response, and no chain
-        return (None, [])
+        soup = BeautifulSoup(body, features="html.parser")
+        about_rows = soup.select("div#tab_about tr")
+        data = {row.th.get_text().strip(): row.td.get_text().strip()
+                for row in about_rows}
+
+        results = {self.dog_items[key]: value for (key, value) in data.items()
+                   if key in self.dog_items}
+
+        overview = soup.select("div.dog_overview_holder")
+        if overview:
+            for item in overview:
+                text = item.get_text()
+
+                if "LOCKED" in text:
+                    results["locked"] = True
+
+                if "Accepting Breeding Requests" in text:
+                    results["accepting-requests"] = True
+
+        spans = {item: soup.select("[class~=var_%s]" % item)
+                 for item in self.dog_stats}
+        stats = {key: span.pop().get_text() for (key, span) in spans.items()
+                 if span}
+        results["stats"] = stats
+
+        logger.info("Dog: %s" % results["name"])
+        return (results, [])
 
     def execute(self, output_filename):
         self.scraper.scrape()
@@ -57,8 +98,8 @@ class KennelScraper(object):
             self.scraper.queue(**login_form_data)
 
         # And start scraping from the "overview" page to get all of the dogs listed
-        logger.info("Queuing kennel overview")
-        self.scraper.queue(url="https://www.furry-paws.com/kennel/overview", type_="kennel-list")
+        logger.info("Queuing Main kennel")
+        self.scraper.queue(url="https://www.furry-paws.com/kennel/view/1621357/0", type_="kennel")
 
         # Wait for scraper to finish
         logger.info("Waiting for scraper to finish")
