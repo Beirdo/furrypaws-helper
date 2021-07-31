@@ -39,26 +39,25 @@ class KennelScraper(object):
         self.scraper = Scraper(callbacks=self.callbacks, basedir=self.config.cachedir(), expiry=self.config.expiry())
         self.cookiefile = self.config.cookiefile()
 
-    def login_response(self, code, body):
-        logger.info("Got login response: code %d" % code)
+    def login_response(self, response):
+        logger.info("Got login response: code %d" % response.get("code", None))
         self.scraper.save_cookies(self.cookiefile)
-        return (None, [])
 
-    def kennel_response(self, code, body):
-        logger.info("Got kennel response: code %d" % code)
+    def kennel_response(self, response):
+        logger.info("Got kennel response: code %d" % response.get("code", None))
         # parse the kennel page, return no response, but a list of dog pages to hit
-        soup = BeautifulSoup(body, features="html.parser")
+        soup = BeautifulSoup(response.get("body", ""), features="html.parser")
         urls = {a['href'] for a in soup.select("a")}
         dog_urls = list(filter(self.dog_re.search, urls))
         kennel_urls = list(filter(self.kennel_re.search, urls))
         items = [{"url": url, "type": "dog"} for url in dog_urls]
         items.extend([{"url": url, "type": "kennel"} for url in kennel_urls])
-        return (None, items)
+        return {"chain": items}
 
-    def dog_response(self, code, body):
-        logger.info("Got dog response: code %d" % code)
+    def dog_response(self, response):
+        logger.info("Got dog response: code %d" % response.get("code", None))
         # parse the dog page, return the data item as a response, and no chain
-        soup = BeautifulSoup(body, features="html.parser")
+        soup = BeautifulSoup(response.get("body", ""), features="html.parser")
         about_rows = soup.select("div#tab_about tr")
         data = {row.th.get_text().strip(): row.td.get_text().strip()
                 for row in about_rows}
@@ -82,9 +81,10 @@ class KennelScraper(object):
         stats = {key: span.pop().get_text() for (key, span) in spans.items()
                  if span}
         results["stats"] = stats
+        results["last-update"] = response.get("ctime", 0,0)
 
         logger.info("Dog: %s" % results["name"])
-        return (results, [])
+        return {"results": results}
 
     def execute(self, output_filename):
         self.scraper.scrape()
