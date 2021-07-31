@@ -81,7 +81,7 @@ class KennelScraper(object):
         stats = {key: span.pop().get_text() for (key, span) in spans.items()
                  if span}
         results["stats"] = stats
-        results["last-update"] = response.get("ctime", 0,0)
+        results["last-update"] = response.get("ctime", 0.0)
 
         logger.info("Dog: %s" % results["name"])
         return {"results": results}
