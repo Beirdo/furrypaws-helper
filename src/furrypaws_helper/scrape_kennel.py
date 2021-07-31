@@ -23,7 +23,7 @@ class KennelScraper(object):
             "dog": self.dog_response,
         }
         self.config = FurryConfig()
-        self.scraper = Scraper(callbacks=self.callbacks)
+        self.scraper = Scraper(callbacks=self.callbacks, basedir=self.config.cachedir(), expiry=self.config.expiry())
         self.cookiefile = self.config.cookiefile()
 
     def login_response(self, code, body):

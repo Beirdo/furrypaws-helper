@@ -7,17 +7,25 @@ logger = logging.getLogger(__name__)
 
 class FurryConfig(object):
     def __init__(self):
-        filename = os.path.expanduser("~/.furrypaws")
+        filename = os.path.expanduser("~/.furrypaws/config")
+        logger.info("Reading config from %s" % filename)
         config = configparser.SafeConfigParser()
         config.read(filename)
         self.config = config
 
-    @staticmethod
-    def cookiefile():
-        return os.path.expanduser("~/.furrypaws.cookies")
+    def cookiefile(self):
+        filename = self.get("cookie-file", "~/.furrypaws/cookies.pickle")
+        return os.path.expanduser(filename)
 
-    def get(self, key):
-        return self.config.get("furrypaws", key)
+    def cachedir(self):
+        cachedir = self.get("cache-dir", "~/.furrypaws/cache")
+        return os.path.expanduser(cachedir)
+
+    def expiry(self):
+        return int(self.get("cache-expiry", 86400))
+
+    def get(self, key, fallback=None):
+        return self.config.get("furrypaws", key, fallback=fallback)
 
     def get_login_form_data(self):
         username = self.get("username")
