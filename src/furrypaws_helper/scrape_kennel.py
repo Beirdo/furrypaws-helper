@@ -9,6 +9,7 @@ from laracna.scraper import Scraper
 
 from furrypaws_helper import setup_logging
 from furrypaws_helper.config import FurryConfig
+from furrypaws_helper.genotype import Genotype
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,9 @@ logger = logging.getLogger(__name__)
 class KennelScraper(object):
     dog_re = re.compile(r'^https://www.furry-paws.com/dog/index/\d+/?$')
     kennel_re = re.compile(r'https://www.furry-paws.com/kennel/view/\d+/\d+/?$')
+    age_re = re.compile(r'^(?P<age>\d+) FP Days')
+    breed_wait_re = re.compile(r'^(?P<count>\d+)\s+\(Can be bred again in (?P<wait>\d+) days\)$')
+    breed_today_re = re.compile(r'^(?P<count>\d+)\s+\(Can be bred (?P<today>\d+) times today\)$')
     dog_items = {
         "Full Name:": "name",
         "Callname:": "callname",
@@ -82,6 +86,36 @@ class KennelScraper(object):
                  if span}
         results["stats"] = stats
         results["last-update"] = response.get("ctime", 0.0)
+        genotype = Genotype(results.get("genotype", ""))
+        results["summary"] = genotype.get_summary()
+
+        age = 0
+        match = self.age_re.search(results.get("age", ""))
+        if match:
+            age = int(match.group("age"))
+            results["age"] = age
+
+        sex = results.get("sex", "")
+        wait = 0
+        if sex == "Female":
+            match = self.breed_wait_re.search(results.get("bred", ""))
+            if match:
+                wait = int(match.group("wait"))
+                count = int(match.group("count"))
+                results["breed-count"] = count
+                results["breed-wait"] = wait
+        else:
+            match = self.breed_today_re.search(results.get("bred", ""))
+            if match:
+                today = int(match.group("today"))
+                count = int(match.group("count"))
+                results["breed-count"] = count
+                results["breed-today"] = today
+                if today == 0:
+                    wait = 1
+
+        breedable = 12 <= age <= 110 and wait == 0
+        results["breedable"] = breedable
 
         logger.info("Dog: %s" % results["name"])
         return {"results": results}
