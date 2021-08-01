@@ -41,7 +41,7 @@ class PotentialLitter(object):
 
         ratings = []
         for i in range(0, 24, 6):
-            score = sum(expected_hh[i:i+6]) / 600.0
+            score = sum(expected_hhs[i:i+6]) / 100.0
             for (rating, min_count) in HealthGenetics.threshholds:
                 if score >= min_count:
                     ratings.append(rating)
