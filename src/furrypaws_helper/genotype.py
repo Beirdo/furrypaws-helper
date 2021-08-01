@@ -51,7 +51,10 @@ class Genotype(object):
 if __name__ == "__main__":
     try:
         for line in sys.stdin:
-            genotype = Genotype(line)
-            print(genotype.get_summary())
+            try:
+                genotype = Genotype(line)
+                print(genotype.get_summary())
+            except BadGenotype:
+                continue
     except KeyboardInterrupt:
         sys.exit(0)
