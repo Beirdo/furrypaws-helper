@@ -50,7 +50,7 @@ class PotentialLitter(object):
         litter = {
             "stud": self.stud.get("name"),
             "bitch": self.bitch.get("name"),
-            "size-genome": mom_alleles[14],
+            "size-genome": "".join(sorted(mom_alleles[14])),
             "litter-size": self.mom.summary.get("litter-size", "Unknown"),
             "genomes": pup_genomes,
             "defects-map": expected_defects,
@@ -106,6 +106,14 @@ def main():
             out_litters.append({"mom": bitch.get("name", None), "litters": litters})
 
         with open("potential-litters.json", "w") as f:
+            json.dump(out_litters, f, indent=2, sort_keys=True)
+
+        for bitch_litters in out_litters:
+            for litter in bitch_litters.get("litters", []):
+                litter.pop("defects-map", None)
+                litter.pop("genomes", None)
+
+        with open("litter-summaries.json", "w") as f:
             json.dump(out_litters, f, indent=2, sort_keys=True)
 
 
