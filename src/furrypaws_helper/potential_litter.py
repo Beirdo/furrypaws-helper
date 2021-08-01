@@ -34,12 +34,12 @@ class PotentialLitter(object):
             pup_genomes.append({key: 25 * value for (key, value) in output.items()})
 
         health_slice = pup_genomes[17:41]
-        expected_defects = [sum([key.count("h") * value for (key, value) in genome.items()]) / 200.0
+        expected_defects = [sum([key.count("h") * value for (key, value) in genome.items()]) / 100.0
                             for genome in health_slice]
 
         ratings = []
         for i in range(0, 24, 6):
-            score = int(sum(expected_defects[i:i + 6]) + 0.5)
+            score = sum([genome.get("hh", 0) for genome in health_slice[i:i + 6]]) / 600.0
             for (rating, min_count) in HealthGenetics.threshholds:
                 if score >= min_count:
                     ratings.append(rating)
@@ -99,7 +99,7 @@ def main():
         for bitch in females:       # Hey, don't blame me, it's the correct term!
             logger.info("Processing: %s" % bitch.get("name", None))
             litters = [PotentialLitter(stud, bitch).litter for stud in males]
-            litters = sorted(litters, key=lambda x: x.get("avg-health-score", 9999.99))
+            litters = sorted(litters, key=lambda x: x.get("avg-total-defects", 9999.99))
             out_litters.append({"mom": bitch.get("name", None), "litters": litters})
 
         with open("potential-litters.json", "w") as f:
