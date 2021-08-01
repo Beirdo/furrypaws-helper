@@ -36,10 +36,12 @@ class PotentialLitter(object):
         health_slice = pup_genomes[17:41]
         expected_defects = [sum([key.count("h") * value for (key, value) in genome.items()]) / 200.0
                             for genome in health_slice]
+        expected_hhs = [genome.get("hh", 0) for genome in health_slice]
+        expected_hh_count = sum(expected_hhs) / 100.0
 
         ratings = []
         for i in range(0, 24, 6):
-            score = sum([genome.get("hh", 0) for genome in health_slice[i:i + 6]]) / 600.0
+            score = sum(expected_hh[i:i+6]) / 600.0
             for (rating, min_count) in HealthGenetics.threshholds:
                 if score >= min_count:
                     ratings.append(rating)
@@ -52,8 +54,9 @@ class PotentialLitter(object):
             "litter-size": self.mom.summary.get("litter-size", "Unknown"),
             "genomes": pup_genomes,
             "defects-map": expected_defects,
-            "avg-total-defects": sum(expected_defects),
+            "avg-total-defect-alleles": sum(expected_defects),
             "avg-health-score": "".join(ratings),
+            'total-defect-probability': expected_hh_count,
         }
 
         return litter
