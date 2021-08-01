@@ -131,6 +131,11 @@ class KennelScraper(object):
             results["breed"] = match.group("breed")
             results["breed-group"] = match.group("group")
 
+        history_tab = soup.select_one("div#tab_history")
+        pedigree_boxes = history_tab.select("div.pedigree_box")
+        print(pedigree_boxes)
+        sys.exit(1)
+
         logger.info("Dog: %s" % results["name"])
         return {"results": results}
 
