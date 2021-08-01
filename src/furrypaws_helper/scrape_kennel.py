@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class KennelScraper(object):
-    dog_re = re.compile(r'^https://www.furry-paws.com/dog/index/\d+/?$')
+    dog_re = re.compile(r'^https://www.furry-paws.com/dog/index/(?P<id>\d+)/?$')
     kennel_re = re.compile(r'https://www.furry-paws.com/kennel/view/\d+/\d+/?$')
     age_re = re.compile(r'^(?P<age>\d+) FP Days')
     breed_wait_re = re.compile(r'^(?P<count>\d+)(?:\s+\(Can be bred again in (?P<wait>\d+) days\))?$')
@@ -33,6 +33,9 @@ class KennelScraper(object):
     }
     dog_stats = ["level", "agility", "charisma", "intelligence", "speed",
                  "stamina", "strength"]
+    pedigree_order = ["paternal grandfather", "paternal grandmother",
+                      "father", "maternal grandfather", "maternal grandmother",
+                      "mother"]
 
     def __init__(self):
         self.callbacks = {
@@ -133,8 +136,14 @@ class KennelScraper(object):
 
         history_tab = soup.select_one("div#tab_history")
         pedigree_boxes = history_tab.select("div.pedigree_box")
-        print(pedigree_boxes)
-        sys.exit(1)
+        pedigree_texts = [[text for text in box.stripped_strings]
+                          for box in pedigree_boxes]
+        pedigree = {name: pedigree_texts[index] for (index, name) in enumerate(self.pedigree_order)}
+        results["pedigree"] = pedigree
+
+        match = self.dog_re.search(response.get("url", ""))
+        if match:
+            results["id"] = int(match.group("id"))
 
         logger.info("Dog: %s" % results["name"])
         return {"results": results}
