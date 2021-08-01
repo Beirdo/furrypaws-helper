@@ -12,9 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class PotentialLitter(object):
-    def __init__(self, dad_genotype, mom_genotype):
-        self.dad = Genotype(dad_genotype)
-        self.mom = Genotype(mom_genotype)
+    def __init__(self, stud, bitch):
+        self.stud = stud
+        self.bitch = bitch
+        self.dad = Genotype(stud.get("genotype", ""))
+        self.mom = Genotype(bitch.get("genotype", ""))
         self.litter = self.breed()
 
     def breed(self):
@@ -44,6 +46,8 @@ class PotentialLitter(object):
                     break
 
         litter = {
+            "stud": self.stud.get("name"),
+            "bitch": self.bitch.get("name"),
             "size-genome": mom_alleles[14],
             "litter-size": self.mom.summary.get("litter-size", "Unknown"),
             "genomes": pup_genomes,
@@ -93,15 +97,9 @@ def main():
 
         for bitch in females:       # Hey, don't blame me, it's the correct term!
             logger.info("Processing: %s" % bitch.get("name", None))
-            mom_genotype = bitch.get("genotype", "")
-            litters = []
-            for stud in males:
-                dad_genotype = stud.get("genotype", "")
-                litters.append(PotentialLitter(dad_genotype, mom_genotype).litter)
-
+            litters = [PotentialLitter(stud, bitch).litter for stud in males]
             litters = sorted(litters, key=lambda x: x.get("avg-health-score", 9999.99))
-            bitch["potential-litters"] = litters
-            out_litters.append(bitch)
+            out_litters.append({"mom": bitch.get("name", None), "litters": litters})
 
         with open("potential-litters.json", "w") as f:
             json.dump(out_litters, f, indent=2, sort_keys=True)
