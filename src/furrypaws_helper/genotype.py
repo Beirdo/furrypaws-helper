@@ -28,6 +28,8 @@ class Genotype(object):
         genomes = str(self.text)
         if not genomes:
             self.summary = {}
+            return
+
         genomes = genomes.split()
         if len(genomes) != 41:
             raise BadGenotype("Genotypes must have 41 genomes, not %d" % len(genomes))
