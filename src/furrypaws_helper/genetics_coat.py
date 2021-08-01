@@ -208,21 +208,12 @@ class CoatColorGenetics(BaseGenetics):
                 summary = "Solid White"
                 return
 
-            if solid_black:
-                summary = "Solid %s" % black_color
-                if recessive_solid_black:
-                    summary += " (recessive)"
-                return
-
             if brindled:
                 summary += "Brindle "
 
-            if non_solid_black and not black_mask:
+            if solid_black:
                 summary += black_color
-
-            if red_color:
-                if non_solid_black:
-                    summary += " and "
+            elif red_color:
                 summary += red_color
 
             if merled:
