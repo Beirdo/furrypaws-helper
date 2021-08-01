@@ -54,7 +54,8 @@ if __name__ == "__main__":
             try:
                 genotype = Genotype(line)
                 print(genotype.get_summary())
-            except BadGenotype:
+            except BadGenotype as e:
+                print(e)
                 continue
     except KeyboardInterrupt:
         sys.exit(0)
