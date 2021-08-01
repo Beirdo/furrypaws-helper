@@ -224,7 +224,10 @@ class CoatColorGenetics(BaseGenetics):
 
             with_ = False
             if agouti:
-                summary += " with %s %s" % (black_color, agouti)
+                agouti_color = black_color
+                if agouti == "Points":
+                    agouti_color = red_color
+                summary += " with %s %s" % (agouti_color, agouti)
                 with_ = True
 
             if black_mask:
