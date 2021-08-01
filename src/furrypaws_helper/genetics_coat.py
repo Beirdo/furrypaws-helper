@@ -211,7 +211,7 @@ class CoatColorGenetics(BaseGenetics):
             if brindled:
                 summary += "Brindle "
 
-            if solid_black:
+            if solid_black or non_solid_black:
                 summary += black_color
             elif red_color:
                 summary += red_color
