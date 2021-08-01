@@ -18,8 +18,8 @@ class KennelScraper(object):
     dog_re = re.compile(r'^https://www.furry-paws.com/dog/index/\d+/?$')
     kennel_re = re.compile(r'https://www.furry-paws.com/kennel/view/\d+/\d+/?$')
     age_re = re.compile(r'^(?P<age>\d+) FP Days')
-    breed_wait_re = re.compile(r'^(?P<count>\d+)\s+\(Can be bred again in (?P<wait>\d+) days\)$')
-    breed_today_re = re.compile(r'^(?P<count>\d+)\s+\(Can be bred (?P<today>\d+) times today\)$')
+    breed_wait_re = re.compile(r'^(?P<count>\d+)(?:\s+\(Can be bred again in (?P<wait>\d+) days\))?$')
+    breed_today_re = re.compile(r'^(?P<count>\d+)(?:\s+\(Can be bred (?P<today>\d+) times today\))?$')
     dog_items = {
         "Full Name:": "name",
         "Callname:": "callname",
@@ -100,14 +100,22 @@ class KennelScraper(object):
         if sex == "Female":
             match = self.breed_wait_re.search(results.get("bred", ""))
             if match:
-                wait = int(match.group("wait"))
+                wait = match.group("wait")
+                if not wait:
+                    wait = 0
+                else:
+                    wait = int(wait)
                 count = int(match.group("count"))
                 results["breed-count"] = count
                 results["breed-wait"] = wait
         else:
             match = self.breed_today_re.search(results.get("bred", ""))
             if match:
-                today = int(match.group("today"))
+                today = match.group("today")
+                if not today:
+                    today = 0
+                else:
+                    today = int(today)
                 count = int(match.group("count"))
                 results["breed-count"] = count
                 results["breed-today"] = today
