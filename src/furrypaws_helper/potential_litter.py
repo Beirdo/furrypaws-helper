@@ -56,7 +56,7 @@ class PotentialLitter(object):
             "defects-map": expected_defects,
             "avg-total-defect-alleles": sum(expected_defects),
             "avg-health-score": "".join(ratings),
-            'total-defect-probability': expected_hh_count,
+            'total-defect-expected': expected_hh_count,
         }
 
         return litter
