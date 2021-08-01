@@ -86,6 +86,7 @@ def main():
         logger.info("Processing breed: %s" % breed)
         females = alldogs.get("Female", [])
         males = alldogs.get("Male", [])
+        logger.info("Breedable Females: %d, Breedable Males: %d" % (len(females), len(males)) )
 
         if not females:
             logger.info("No breedable females.  Skipping")
