@@ -6,14 +6,15 @@ from collections import defaultdict
 from furrypaws_helper import setup_logging
 from furrypaws_helper.genetics_health import HealthGenetics
 from furrypaws_helper.genetics_litter import LitterSizeGenetics
+from furrypaws_helper.genotype import Genotype
 
 logger = logging.getLogger(__name__)
 
 
 class PotentialLitter(object):
     def __init__(self, dad_genotype, mom_genotype):
-        self.dad = LitterSizeGenetics(dad_genotype)
-        self.mom = LitterSizeGenetics(mom_genotype)
+        self.dad = Genotype(dad_genotype)
+        self.mom = Genotype(mom_genotype)
         self.litter = self.breed()
 
     def breed(self):
@@ -44,7 +45,7 @@ class PotentialLitter(object):
 
         litter = {
             "size-genome": mom_alleles[14],
-            "litter-size": self.mom.get_summary(),
+            "litter-size": self.mom.summary.get("litter-size", "Unknown"),
             "genomes": pup_genomes,
             "defects-map": expected_defects,
             "avg-total-defects": sum(expected_defects),

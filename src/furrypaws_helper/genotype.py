@@ -17,6 +17,7 @@ class Genotype(object):
         self.genome_list = []
         self.genomes = {}
         self.summary = {}
+        self.alleles = []
         self.set_text(text)
 
     def set_text(self, text):
@@ -36,6 +37,7 @@ class Genotype(object):
             "health": HealthGenetics(genomes),
         }
         self.summary = {key: value.get_summary() for (key, value) in self.genomes.items()}
+        self.alleles = self.genomes["health"].alleles
 
     def get_summary(self):
         return self.summary
