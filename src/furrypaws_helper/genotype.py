@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from furrypaws_helper.exceptions import BadGenotype
+from furrypaws_helper.exceptions import BadGenotype, BadGenome
 from furrypaws_helper.genetics_coat import CoatColorGenetics
 from furrypaws_helper.genetics_eye import EyeColorGenetics
 from furrypaws_helper.genetics_health import HealthGenetics
@@ -54,7 +54,7 @@ if __name__ == "__main__":
             try:
                 genotype = Genotype(line)
                 print(genotype.get_summary())
-            except BadGenotype as e:
+            except (BadGenotype, BadGenome) as e:
                 print(e)
                 continue
     except KeyboardInterrupt:
