@@ -44,6 +44,9 @@ class Genotype(object):
 
 
 if __name__ == "__main__":
-    for line in sys.stdin:
-        genotype = Genotype(line)
-        print(genotype.get_summary())
+    try:
+        for line in sys.stdin:
+            genotype = Genotype(line)
+            print(genotype.get_summary())
+    except Exception:
+        pass
