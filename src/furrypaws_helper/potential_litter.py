@@ -34,7 +34,7 @@ class PotentialLitter(object):
             pup_genomes.append({key: 25 * value for (key, value) in output.items()})
 
         health_slice = pup_genomes[17:41]
-        expected_defects = [sum([key.count("h") * value for (key, value) in genome.items()]) / 100.0
+        expected_defects = [sum([key.count("h") * value for (key, value) in genome.items()]) / 200.0
                             for genome in health_slice]
 
         ratings = []
