@@ -101,7 +101,7 @@ def main():
 
             litters = sorted(litters, key=lambda x: x.get("avg-health-score", 9999.99))
             bitch["potential-litters"] = litters
-            out_litters.append[bitch]
+            out_litters.append(bitch)
 
         with open("potential-litters.json", "w") as f:
             json.dump(out_litters, f, indent=2, sort_keys=True)
