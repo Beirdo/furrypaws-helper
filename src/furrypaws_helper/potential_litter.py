@@ -102,7 +102,7 @@ def main():
         for bitch in females:       # Hey, don't blame me, it's the correct term!
             logger.info("Processing: %s" % bitch.get("name", None))
             litters = [PotentialLitter(stud, bitch).litter for stud in males]
-            litters = sorted(litters, key=lambda x: x.get("avg-total-defects", 9999.99))
+            litters = sorted(litters, key=lambda x: x.get("avg-total-defect-alleles", 9999.99))
             out_litters.append({"mom": bitch.get("name", None), "litters": litters})
 
         with open("potential-litters.json", "w") as f:
