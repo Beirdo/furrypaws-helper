@@ -211,10 +211,14 @@ class CoatColorGenetics(BaseGenetics):
             if brindled:
                 summary += "Brindle "
 
-            if solid_black or non_solid_black:
-                summary += black_color
+            if (solid_black or non_solid_black) and agouti != "Sable":
+                base_color = black_color
             elif red_color:
-                summary += red_color
+                base_color = red_color
+            else:
+                base_color = "WTF"
+
+            summary += base_color
 
             if merled:
                 summary += " Merle"
