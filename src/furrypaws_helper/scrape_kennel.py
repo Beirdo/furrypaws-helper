@@ -20,6 +20,7 @@ class KennelScraper(object):
     age_re = re.compile(r'^(?P<age>\d+) FP Days')
     breed_wait_re = re.compile(r'^(?P<count>\d+)(?:\s+\(Can be bred again in (?P<wait>\d+) days\))?$')
     breed_today_re = re.compile(r'^(?P<count>\d+)(?:\s+\(Can be bred (?P<today>\d+) times today\))?$')
+    breed_re = re.compile(r'^(?:Registered\s+)?(?P<breed>.*?)\s\((?P<group>.*?)\)$')
     dog_items = {
         "Full Name:": "name",
         "Callname:": "callname",
@@ -124,6 +125,11 @@ class KennelScraper(object):
 
         breedable = 12 <= age <= 110 and wait == 0
         results["breedable"] = breedable
+
+        match = self.breed_re.search(results.get("breed", ""))
+        if match:
+            results["breed"] = match.group("breed")
+            results["breed-group"] = match.group("group")
 
         logger.info("Dog: %s" % results["name"])
         return {"results": results}
