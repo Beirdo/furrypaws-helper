@@ -1,6 +1,7 @@
 import json
 import logging
 import sys
+from argparse import ArgumentParser
 from collections import defaultdict
 
 from furrypaws_helper import setup_logging
@@ -63,10 +64,64 @@ class PotentialLitter(object):
 
 
 def main():
-    setup_logging(logging.DEBUG)
+    parser = ArgumentParser(description="Run potential breeding pairs")
+    parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug output")
+    parser.add_argument("-i", "--input-file", action="store", help="Input file", default="kennel-list.json")
+    parser.add_argument("-o", "--output-file", action="store", help="Output file", default="litters=%s.json")
+    parser.add_argument("-m", "--mode", action="store", choices=["file", "interactive"], default="file",
+                        help="Mode to run in (%(choices)s - default: %(default)s)")
+    args = parser.parse_args()
 
+    level = logging.INFO
+    if args.debug:
+        level = logging.DEBUG
+    setup_logging(level)
+
+    if args.mode == "file":
+        return process_file(args.input_file, args.output_file)
+    elif args.mode == "interactive":
+        return process_interactive()
+
+
+def process_interactive():
+    try:
+        while True:
+            stud = {}
+            bitch = {}
+
+            print("Stud:")
+            for line in sys.stdin:
+                line = line.strip()
+                if not line:
+                    continue
+                stud = {
+                    "name": "stud",
+                    "genotype": line,
+                }
+                break
+
+            print("Bitch:")
+            for line in sys.stdin:
+                line = line.strip()
+                if not line:
+                    continue
+                bitch = {
+                    "name": "bitch",
+                    "genotype": line,
+                }
+                break
+
+            litter = PotentialLitter(stud, bitch).litter
+            litter.pop("defects-map", None)
+            litter.pop("genomes", None)
+            print(json.dumps(litter, indent=2, sort_keys=True))
+    except KeyboardInterrupt:
+        return
+
+
+def process_file(infile, outfile):
     logger.info("Reading kennel list")
-    with open("kennel-list.json", "r") as f:
+    with open(infile, "r") as f:
         kennel = json.load(f)
 
     logger.info("Sorting breedable dogs")
@@ -105,7 +160,14 @@ def main():
             litters = sorted(litters, key=lambda x: x.get("avg-total-defect-alleles", 9999.99))
             out_litters.append({"mom": bitch.get("name", None), "litters": litters})
 
-        with open("potential-litters.json", "w") as f:
+        if '%' in outfile:
+            out_full = outfile % "full"
+            out_summary = outfile % "summary"
+        else:
+            out_full = outfile
+            out_summary = None
+
+        with open(out_full, "w") as f:
             json.dump(out_litters, f, indent=2, sort_keys=True)
 
         for bitch_litters in out_litters:
@@ -113,8 +175,9 @@ def main():
                 litter.pop("defects-map", None)
                 litter.pop("genomes", None)
 
-        with open("litter-summaries.json", "w") as f:
-            json.dump(out_litters, f, indent=2, sort_keys=True)
+        if out_summary:
+            with open(out_summary, "w") as f:
+                json.dump(out_litters, f, indent=2, sort_keys=True)
 
 
 if __name__ == "__main__":
